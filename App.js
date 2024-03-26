@@ -1,11 +1,19 @@
 import { StatusBar } from "expo-status-bar";
-import { Button, Image, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Button,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { useEffect, useState } from "react";
 
 import * as ImagePicker from "expo-image-picker";
 import * as MediaLibrary from "expo-media-library";
 
-import MapView from "react-native-maps";
+import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
 
 import imagePlaceholder from "./assets/images/placeholder.svg";
@@ -75,28 +83,33 @@ export default function App() {
   return (
     <>
       <StatusBar style="auto" />
-      <View style={styles.container}>
-        <Text style={styles.titulo}>Localizar Fotoineitor</Text>
-        <View style={styles.viewFoto}>
-          <TextInput style={styles.input} placeholder="Legenda da foto" />
-          {foto ? (
-            <Image
-              source={{ uri: foto }}
-              style={{ width: 300, height: 168.75, marginBottom: 16 }}
-            />
-          ) : (
-            <Image source={imagePlaceholder} style={styles.imagem} />
-          )}
-          <Button title="Tirar uma foto" onPress={acessarCamera} />
+      <ScrollView>
+        <View style={styles.container}>
+          <Text style={styles.titulo}>Localizar Fotoineitor</Text>
+          <View style={styles.viewFoto}>
+            <TextInput style={styles.input} placeholder="Legenda da foto" />
+            {foto ? (
+              <Image
+                source={{ uri: foto }}
+                style={{ width: 300, height: 168.75, marginBottom: 16 }}
+              />
+            ) : (
+              <Image source={imagePlaceholder} style={styles.imagem} />
+            )}
+            <Button title="Tirar uma foto" onPress={acessarCamera} />
+          </View>
+          <View status={styles.viewMapa}>
+            <MapView
+              mapType="hybrid"
+              style={styles.mapa}
+              region={localizacao ?? regiaoInicialMapa}
+            >
+              {localizacao && <Marker coordinate={localizacao} />}
+            </MapView>
+            <Button title="Marcar a localização" onPress={marcarLocal} />
+          </View>
         </View>
-        <View status={styles.viewMapa}>
-          <MapView
-            style={styles.mapa}
-            region={localizacao ?? regiaoInicialMapa}
-          />
-          <Button title="Marcar a localização" onPress={marcarLocal} />
-        </View>
-      </View>
+      </ScrollView>
     </>
   );
 }
@@ -108,7 +121,7 @@ const styles = StyleSheet.create({
   },
   titulo: {
     fontSize: 24,
-    marginTop: 30,
+    marginTop: 50,
   },
   viewFoto: {
     marginTop: 25,
@@ -126,7 +139,9 @@ const styles = StyleSheet.create({
     height: 168.75,
     marginBottom: 16,
   },
-  viewMapa: {},
+  viewMapa: {
+    paddingBottom: 30,
+  },
   mapa: {
     width: 300,
     height: 168.75,
