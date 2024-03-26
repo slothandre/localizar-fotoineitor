@@ -139,9 +139,7 @@ const styles = StyleSheet.create({
     height: 168.75,
     marginBottom: 16,
   },
-  viewMapa: {
-    paddingBottom: 30,
-  },
+  viewMapa: {},
   mapa: {
     width: 300,
     height: 168.75,
