@@ -1,10 +1,14 @@
 import { StatusBar } from "expo-status-bar";
 import { Button, Image, StyleSheet, Text, TextInput, View } from "react-native";
+import { useEffect, useState } from "react";
 
 import * as ImagePicker from "expo-image-picker";
 import * as MediaLibrary from "expo-media-library";
+
+import MapView from "react-native-maps";
+import * as Location from "expo-location";
+
 import imagePlaceholder from "./assets/images/placeholder.svg";
-import { useEffect, useState } from "react";
 
 export default function App() {
   const [foto, setFoto] = useState(null);
@@ -33,6 +37,41 @@ export default function App() {
     }
   };
 
+  const [minhaLocalizacao, setMinhaLocalizacao] = useState(null);
+
+  useEffect(() => {
+    async function obterLocalizacao() {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+
+      if (status !== "granted") {
+        Alert.alert("Ops!", "Você não autorizou o uso de geolocalização");
+        return;
+      }
+
+      let localizacaoAtual = await Location.getCurrentPositionAsync({});
+      setMinhaLocalizacao(localizacaoAtual);
+    }
+    obterLocalizacao();
+  }, []);
+
+  const [localizacao, setLocalizacao] = useState(null);
+
+  const regiaoInicialMapa = {
+    latitude: -23.533773,
+    longitude: -46.65529,
+    latitudeDelta: 20,
+    longitudeDelta: 20,
+  };
+
+  const marcarLocal = () => {
+    setLocalizacao({
+      latitude: minhaLocalizacao.coords.latitude,
+      longitude: minhaLocalizacao.coords.longitude,
+      latitudeDelta: 0.02,
+      longitudeDelta: 0.01,
+    });
+  };
+
   return (
     <>
       <StatusBar style="auto" />
@@ -48,8 +87,14 @@ export default function App() {
           ) : (
             <Image source={imagePlaceholder} style={styles.imagem} />
           )}
-
           <Button title="Tirar uma foto" onPress={acessarCamera} />
+        </View>
+        <View status={styles.viewMapa}>
+          <MapView
+            style={styles.mapa}
+            region={localizacao ?? regiaoInicialMapa}
+          />
+          <Button title="Marcar a localização" onPress={marcarLocal} />
         </View>
       </View>
     </>
@@ -63,10 +108,11 @@ const styles = StyleSheet.create({
   },
   titulo: {
     fontSize: 24,
-    marginTop: 20,
+    marginTop: 30,
   },
   viewFoto: {
-    marginTop: 30,
+    marginTop: 25,
+    marginBottom: 16,
   },
   input: {
     width: 300,
@@ -76,6 +122,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   imagem: {
+    width: 300,
+    height: 168.75,
+    marginBottom: 16,
+  },
+  viewMapa: {},
+  mapa: {
     width: 300,
     height: 168.75,
     marginBottom: 16,
