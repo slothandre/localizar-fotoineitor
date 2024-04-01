@@ -25,6 +25,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "97a1cad5-df4e-460a-87d8-11bada5e2afd"
+      }
+    },
+    "owner": "sloth.andre"
   }
 }
