@@ -1,5 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import {
+  Alert,
   Button,
   Image,
   ScrollView,
@@ -17,8 +18,9 @@ import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
 
 import imagePlaceholder from "../../assets/images/placeholder.svg";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export default function Home() {
+export default function Home({ navigation }) {
   const [foto, setFoto] = useState(null);
 
   const [status, requestPermission] = ImagePicker.useCameraPermissions();
@@ -79,6 +81,34 @@ export default function Home() {
       longitudeDelta: 0.01,
     });
   };
+
+  const [nomeFoto, setNomeFoto] = useState("");
+  const tituloFoto = (valorInput) => {
+    setNomeFoto(valorInput);
+  };
+  const localSalvo = { foto, localizacao, nomeFoto };
+
+  const salvar = async () => {
+    try {
+      const lugaresVisitados = await AsyncStorage.getItem("@lugaresvisitados");
+      const listaDeLugares = lugaresVisitados
+        ? JSON.parse(lugaresVisitados)
+        : [];
+      listaDeLugares.push(localSalvo);
+      await AsyncStorage.setItem(
+        "@lugaresvisitados",
+        JSON.stringify(listaDeLugares)
+      );
+      Alert.alert("Salvo!", "Local salvo com sucesso!");
+    } catch (error) {
+      console.log("Erro: " + error);
+      Alert.alert(
+        "Erro",
+        "Ops, por algum motivo não foi possível salvar a foto"
+      );
+    }
+  };
+
   return (
     <>
       <StatusBar style="auto" />
@@ -86,7 +116,12 @@ export default function Home() {
         <View style={styles.container}>
           <Text style={styles.titulo}>Localizar Fotoineitor</Text>
           <View style={styles.viewFoto}>
-            <TextInput style={styles.input} placeholder="Legenda da foto" />
+            <TextInput
+              style={styles.input}
+              placeholder="Legenda da foto"
+              onChangeText={tituloFoto}
+              onSubmitEditing={salvar}
+            />
             {foto ? (
               <Image
                 source={{ uri: foto }}
@@ -97,7 +132,7 @@ export default function Home() {
             )}
             <Button title="Tirar uma foto" onPress={acessarCamera} />
           </View>
-          <View status={styles.viewMapa}>
+          <View style={styles.viewMapa}>
             <MapView
               mapType="hybrid"
               style={styles.mapa}
@@ -106,6 +141,15 @@ export default function Home() {
               {localizacao && <Marker coordinate={localizacao} />}
             </MapView>
             <Button title="Marcar a localização" onPress={marcarLocal} />
+          </View>
+          <View style={styles.viewBotoes}>
+            <Button title="Salvar" onPress={salvar} />
+            <Button
+              title="Itens Salvos"
+              onPress={() => {
+                navigation.navigate("Salvos");
+              }}
+            />
           </View>
         </View>
       </ScrollView>
@@ -138,10 +182,18 @@ const styles = StyleSheet.create({
     height: 168.75,
     marginBottom: 16,
   },
-  viewMapa: {},
+  viewMapa: {
+    marginBottom: 16,
+  },
   mapa: {
     width: 300,
     height: 168.75,
     marginBottom: 16,
+  },
+  viewBotoes: {
+    marginBottom: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: 300,
   },
 });
